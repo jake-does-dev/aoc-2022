@@ -16,7 +16,7 @@ internal class CalorieCounterTest {
 
     @Test
     fun topNCaloriesSumExample() {
-        assertEquals(45000, sumTopNCalories("src/main/resources/day01/day01-example.txt", topN = 3))
+        assertEquals(45000, sumTopNCalories("src/main/resources/day01/day02-example.txt", topN = 3))
     }
 
     @Test
