@@ -16,13 +16,10 @@ private fun readAsRangePair(inputPath: String) : List<Pair<Range, Range>> =
         .map { it.split(",") }
         .map { Pair(it[0].asRange(), it[1].asRange()) }
 
-private fun String.asRange() : Range =
-    if (matches(Regex("""\d+-\d+"""))) {
-        val rangeParts = split("-")
-        Range(rangeParts[0].toInt(), rangeParts[1].toInt())
-    } else {
-        throw IllegalStateException("Cannot parse input! The regex does not match for the following: $this")
-    }
+private fun String.asRange() : Range {
+    val rangeParts = split("-")
+    return Range(rangeParts[0].toInt(), rangeParts[1].toInt())
+}
 
 private infix fun Range.overlaps(other: Range) : Boolean =
     start <= other.start && end >= other.end
