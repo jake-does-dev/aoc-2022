@@ -1,7 +1,5 @@
 package day03
 
-import utils.readFile
-
 val itemToPriority = ((('a'..'z') union ('A'..'Z')) zip ((1..26) union (27..52))).toMap()
 
 fun sackSplitting(inputPath: String): Int =
@@ -15,7 +13,7 @@ fun findBadges(inputPath: String): Int =
         .sumItemIntersectionPriorities()
 
 private fun readLinesAsSequence(inputPath: String): Sequence<String> =
-    readFile(inputPath)
+    utils.readFile(inputPath)
         .split("\n")
         .asSequence()
 

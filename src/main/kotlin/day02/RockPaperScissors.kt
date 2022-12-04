@@ -2,16 +2,15 @@ package day02
 
 import day02.Outcome.*
 import day02.Shape.*
-import utils.readFile
 
 fun rockPaperScissorsWithShape(inputPath: String): Int =
-    readFile(inputPath)
+    utils.readFile(inputPath)
         .split("\n")
         .map { it.shapeToShape() }
         .sumOf { it.calculateScore() }
 
 fun rockPaperScissorsWithOutcome(inputPath: String): Int =
-    readFile(inputPath)
+    utils.readFile(inputPath)
         .split("\n")
         .map { it.shapeToOutcome() }
         .map { it.selectShapeFromOutcome() }

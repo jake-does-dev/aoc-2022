@@ -1,9 +1,7 @@
 package day01
 
-import utils.readFile
-
 fun sortedCalories(inputPath: String): List<Int> {
-    val foodCalories = readFile(inputPath)
+    val foodCalories = utils.readFile(inputPath)
         .split("\n\n")
 
     val caloricSums = foodCalories
