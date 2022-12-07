@@ -14,10 +14,8 @@ fun findSmallestDirSizeToDelete(inputPath: String): Int {
     val unusedSpace = 70000000 - rootSize
     val requiredSpace = 30000000 - unusedSpace
 
-    val filteredDirSizes = directories
+    return directories
         .filter { it.calculatedSize >= requiredSpace }
-
-    return filteredDirSizes
         .minOf { it.calculatedSize }
 }
 
