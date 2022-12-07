@@ -4,62 +4,48 @@ import utils.stack.pop
 import utils.stack.push
 
 fun findSmallerSizeDirectorySum(inputPath: String): Int =
-    calculateDirSizes(inputPath)
-        .filter { (_, size) -> size <= 100000 }
-        .map { (_, size) -> size }
-        .sum()
+    computeDirectories(inputPath)
+        .filter { it.calculatedSize <= 100000 }
+        .sumOf { it.calculatedSize }
 
 fun findSmallestDirSizeToDelete(inputPath: String): Int {
-    val dirToSizes = calculateDirSizes(inputPath)
-    val rootSize = dirToSizes["/"] ?: throw IllegalStateException("This should exist, but does not!")
+    val directories = computeDirectories(inputPath)
+    val rootSize = directories.first { it.name == "/" }.calculatedSize
     val unusedSpace = 70000000 - rootSize
     val requiredSpace = 30000000 - unusedSpace
 
-    val filteredDirSizes =  dirToSizes
-        .filter { (_, size) -> size >= requiredSpace }
+    val filteredDirSizes = directories
+        .filter { it.calculatedSize >= requiredSpace }
 
     return filteredDirSizes
-        .map { (_, size) -> size }
-        .minOf { it }
+        .minOf { it.calculatedSize }
 }
 
-
-private fun calculateDirSizes(inputPath: String): Map<String, Int> {
-    val dirStack: ArrayDeque<String> = ArrayDeque()
-    val dirToCalculatedSize: MutableMap<String, Int> = mutableMapOf()
-    val dirNameToOccurrences: MutableMap<String, Int> = mutableMapOf()
+private fun computeDirectories(inputPath: String): List<Directory> {
+    val directoryStack: ArrayDeque<Directory> = ArrayDeque()
+    val directories: MutableList<Directory> = mutableListOf()
 
     utils.readFile(inputPath)
         .split("\n")
         .forEach {
             when {
-                it == "$ cd .." -> dirStack.pop()
-                it.contains("$ cd") -> {
-                    val dir = it.drop(5)
-                    val numOccurrences = dirNameToOccurrences[dir] ?: 0
+                it == "$ cd .." ->
+                    directories += directoryStack.pop()
 
-                    val mutatedDir = if (numOccurrences == 0) {
-                        dir
-                    } else {
-                        dir + numOccurrences
-                    }
+                it.contains("$ cd") ->
+                    directoryStack.push(Directory(name = it.drop(5)))
 
-                    dirNameToOccurrences[dir] = numOccurrences + 1
-
-                    dirStack.push(mutatedDir)
-                }
                 it[0].isDigit() -> {
                     val (sizeStr, _) = it.split(" ")
                     val size = sizeStr.toInt()
-                    dirStack.forEach { dir ->
-                        var prevSize = dirToCalculatedSize[dir]
-                        if (prevSize == null) prevSize = 0
-                        val newSize = prevSize + size
-                        dirToCalculatedSize[dir] = newSize
-                    }
+                    directoryStack.forEach { dir -> dir.calculatedSize += size }
                 }
             }
         }
 
-    return dirToCalculatedSize
+    repeat(directoryStack.size) { directories += directoryStack.pop() }
+
+    return directories
 }
+
+data class Directory(val name: String, var calculatedSize: Int = 0)
