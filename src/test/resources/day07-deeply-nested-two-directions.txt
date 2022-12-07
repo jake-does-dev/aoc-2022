@@ -1,0 +1,38 @@
+$ cd /
+$ ls
+dir a
+dir h
+$ cd a
+$ ls
+dir b
+$ cd b
+$ ls
+dir c
+$ cd c
+$ ls
+dir d
+$ cd d
+$ ls
+dir e
+$ cd e
+$ ls
+90000 g.txt
+$ cd ..
+$ cd ..
+$ cd ..
+$ cd ..
+$ cd h
+$ ls
+dir i
+$ cd i
+$ ls
+dir j
+$ cd j
+$ ls
+dir k
+$ cd k
+$ ls
+dir l
+$ cd l
+$ ls
+90000 m.txt
