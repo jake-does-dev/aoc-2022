@@ -11,7 +11,7 @@ fun findSmallerSizeDirectorySum(inputPath: String): Int =
 
 fun findSmallestDirSizeToDelete(inputPath: String): Int {
     val dirToSizes = calculateDirSizes(inputPath)
-    val rootSize = dirToSizes["/1"] ?: throw IllegalStateException("This should exist, but does not!")
+    val rootSize = dirToSizes["/"] ?: throw IllegalStateException("This should exist, but does not!")
     val unusedSpace = 70000000 - rootSize
     val requiredSpace = 30000000 - unusedSpace
 
@@ -36,15 +36,20 @@ private fun calculateDirSizes(inputPath: String): Map<String, Int> {
                 it == "$ cd .." -> dirStack.pop()
                 it.contains("$ cd") -> {
                     val dir = it.drop(5)
-
                     val numOccurrences = dirNameToOccurrences[dir] ?: 0
+
+                    val mutatedDir = if (numOccurrences == 0) {
+                        dir
+                    } else {
+                        dir + numOccurrences
+                    }
+
                     dirNameToOccurrences[dir] = numOccurrences + 1
-                    val mutatedDir = dir + dirNameToOccurrences[dir]
 
                     dirStack.push(mutatedDir)
                 }
                 it[0].isDigit() -> {
-                    val (sizeStr, name) = it.split(" ")
+                    val (sizeStr, _) = it.split(" ")
                     val size = sizeStr.toInt()
                     dirStack.forEach { dir ->
                         var prevSize = dirToCalculatedSize[dir]
