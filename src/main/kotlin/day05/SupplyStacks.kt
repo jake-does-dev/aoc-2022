@@ -2,6 +2,9 @@ package day05
 
 import day05.Ordering.SAME
 import day05.Ordering.REVERSED
+import utils.stack.peek
+import utils.stack.pop
+import utils.stack.push
 
 fun moveStacks(inputFile: String, ordering: Ordering, stacks: List<ArrayDeque<Char>>): String {
     val moves = utils.readFile(inputFile)
@@ -38,10 +41,6 @@ private fun List<ArrayDeque<Char>>.performMove(move: Move, ordering: Ordering) {
 }
 
 private fun List<ArrayDeque<Char>>.getMessage() : String = map { it.peek() }.joinToString("")
-
-private fun <T> ArrayDeque<T>.push(element: T) : Unit = addLast(element)
-private fun <T> ArrayDeque<T>.pop() : T = removeLast()
-private fun <T> ArrayDeque<T>.peek() : T = last()
 
 private data class Move(val number: Int, val fromIndex: Int, val toIndex: Int)
 enum class Ordering {
