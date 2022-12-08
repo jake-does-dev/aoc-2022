@@ -2,37 +2,75 @@ package day08
 
 fun externallyVisibleTreeCount(inputPath: String): Int {
     val treeGrid = createTreeGrid(inputPath)
+    val gridSize = treeGrid.size
 
-    val treeViews = mutableListOf<List<Tree>>()
-    treeViews.addAll(treeGrid.rowsForwards())
-    treeViews.addAll(treeGrid.rowsBackwards())
-    treeViews.addAll(treeGrid.columnsDown())
-    treeViews.addAll(treeGrid.columnsUp())
+    setVisible(treeGrid.rowsForwards()) { it.visibleFromLeft = true }
+    setVisible(treeGrid.rowsBackwards()) { it.visibleFromRight = true }
+    setVisible(treeGrid.columnsDown()) { it.visibleFromTop = true }
+    setVisible(treeGrid.columnsUp()) { it.visibleFromBottom = true }
 
-    val sum = treeViews
-        .map { it.makeMonotonicallyIncreasing() }
-        .flatten()
-        .toSet()
-        .sumOf { it.height }
+    val visible = treeGrid.flatten()
+        .filter { it.visible(gridSize) }
 
-    return sum
+    return visible.count()
 }
 
-private fun List<Tree>.makeMonotonicallyIncreasing(): List<Tree> {
-    val monotonicallyIncreasing = mutableListOf<Tree>()
+fun largestScenicScore(inputPath: String): Int {
+    val treeGrid = createTreeGrid(inputPath)
+
+    setScenicScore(treeGrid.rowsForwards(),
+        { tree, other -> tree.colIdx < other.colIdx },
+        { tree, score -> tree.scenicScoreFromLeft = score })
+    setScenicScore(treeGrid.rowsBackwards(),
+        { tree, other -> tree.colIdx > other.colIdx },
+        { tree, score -> tree.scenicScoreFromRight = score })
+    setScenicScore(treeGrid.columnsDown(),
+        { tree, other -> tree.rowIdx < other.rowIdx },
+        { tree, score -> tree.scenicScoreFromTop = score })
+    setScenicScore(treeGrid.columnsUp(),
+        { tree, other -> tree.rowIdx > other.rowIdx },
+        { tree, score -> tree.scenicScoreFromBottom = score })
+
+    val trees = treeGrid.flatten()
+
+    return trees.maxOf { it.calculateScenicScore() }
+}
+
+fun setVisible(treeViews: List<List<Tree>>, scoreSetter: (Tree) -> Unit) =
+    treeViews.map { it.findVisibleTrees() }.flatten().forEach { scoreSetter(it) }
+
+fun setScenicScore(treeViews: List<List<Tree>>, treeViewConstraint: (Tree, Tree) -> Boolean, scoreSetter: (Tree, Int) -> Unit) =
+    treeViews.forEach { treeView ->
+        treeView.forEach { tree ->
+            val remainingTrees = treeView.filter { other -> treeViewConstraint(tree, other) }
+            val viewDepth = when (val viewDepthIndex = remainingTrees.indexOfFirst { other -> tree.height <= other.height }) {
+                -1 -> remainingTrees.size
+                else -> viewDepthIndex + 1
+            }
+//                .count { other -> tree.height > other.height }
+
+            scoreSetter(
+                tree,
+                viewDepth
+            )
+        }
+    }
+
+private fun List<Tree>.findVisibleTrees(): List<Tree> {
+    val visibleTrees = mutableListOf<Tree>()
 
     // Outside tree is always visible
-    monotonicallyIncreasing.add(this[0])
+    visibleTrees += this[0]
     var tallestSeen = this[0].height
 
     this.drop(1).forEach {
         if (it.height > tallestSeen) {
-            monotonicallyIncreasing.add(it)
+            visibleTrees += it
             tallestSeen = it.height
         }
     }
 
-    return monotonicallyIncreasing
+    return visibleTrees
 }
 
 private fun List<List<Tree>>.rowsForwards(): List<List<Tree>> = map { it }
@@ -58,10 +96,42 @@ private fun List<List<Tree>>.columns(rowRange: IntProgression): List<List<Tree>>
 fun createTreeGrid(inputPath: String): List<List<Tree>> =
     utils.readFile(inputPath)
         .split("\n")
-        .map { it.map { height -> Tree(height.toString().toInt()) } }
+        .mapIndexed { rowIdx, row ->
+            row.mapIndexed { colIdx, height ->
+                Tree(
+                    rowIdx,
+                    colIdx,
+                    height.toString().toInt()
+                )
+            }
+        }
 
-fun main() {
-    externallyVisibleTreeCount("src/test/resources/day08-example.txt")
+
+private fun Tree.visible(gridSize: Int): Boolean {
+    val endPoints = setOf(0, gridSize - 1)
+    val isExterior = ((rowIdx in endPoints) or (colIdx in endPoints))
+
+    return if (isExterior) {
+        true
+    } else {
+        visibleFromLeft or visibleFromRight or visibleFromTop or visibleFromBottom
+    }
 }
 
-data class Tree(val height: Int, var visible: Boolean = false)
+private fun Tree.calculateScenicScore(): Int =
+    scenicScoreFromLeft * scenicScoreFromRight * scenicScoreFromBottom * scenicScoreFromTop
+
+data class Tree(
+    val rowIdx: Int,
+    val colIdx: Int,
+    val height: Int,
+    var scenicScoreFromLeft: Int = 0,
+    var scenicScoreFromRight: Int = 0,
+    var scenicScoreFromTop: Int = 0,
+    var scenicScoreFromBottom: Int = 0,
+    var scenicScore: Int = 0,
+    var visibleFromLeft: Boolean = false,
+    var visibleFromRight: Boolean = false,
+    var visibleFromTop: Boolean = false,
+    var visibleFromBottom: Boolean = false,
+)
